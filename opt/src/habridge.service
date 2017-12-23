@@ -1,0 +1,14 @@
+[Unit]
+Description=HA Bridge
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=habridge
+WorkingDirectory=/opt/habridge
+ExecStart=/opt/habridge/bin/starthabridge.sh
+# /usr/bin/java -jar -Djava.net.preferIPv4Stack=true -Dupnp.config.address= -Dconfig.file=/etc/opt/habridge/habridge.config /opt/habridge/bin/ha-bridge.jar
+
+[Install]
+WantedBy=multi-user.target
