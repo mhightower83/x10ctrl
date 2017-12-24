@@ -15,5 +15,6 @@ chmod 666 $logfile
 nohup authbind --deep java \
       -jar \
       -Dconfig.file=/etc/opt/habridge/habridge.config \
-#     -Dserver.port=8080 \ # <port number> needed if port 80 is already in use and first time running
       /opt/habridge/bin/ha-bridge.jar >>$logfile 2>&1
+
+#     -Dserver.port=8080 \ # <port number> needed if port 80 is already in use and first time running
