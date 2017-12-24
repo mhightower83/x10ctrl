@@ -7,7 +7,7 @@ After=network-online.target
 Type=simple
 User=habridge
 WorkingDirectory=/opt/habridge
-ExecStart=/opt/habridge/bin/starthabridge.sh
+ExecStart=/opt/habridge/bin/start.sh
 # /usr/bin/java -jar -Djava.net.preferIPv4Stack=true -Dupnp.config.address= -Dconfig.file=/etc/opt/habridge/habridge.config /opt/habridge/bin/ha-bridge.jar
 
 [Install]
