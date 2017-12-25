@@ -106,8 +106,8 @@ queRequest() {
   fi
 
   if [[ -n "$*" ]]; then
-    echo -en "$*\n">>$pipe
     echo `date +"%b %d %T"` "que $*" >>$logfile
+    echo -en "$*\n">>$pipe
   fi
   return 1
 } # main()
