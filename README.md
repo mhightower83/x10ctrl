@@ -1,4 +1,2 @@
 # x10ctrl
-Notes for connecting Amazon's Echo and X10 together
-
-Start by reading the [WiKi](https://github.com/mhightower83/x10ctrl/wiki) first.
+Notes for connecting Amazon's Echo and X10 together. See [Wiki](https://github.com/mhightower83/x10ctrl/wiki) for details.
