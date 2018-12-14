@@ -1,14 +1,18 @@
 [Unit]
 Description=HA Bridge
+# This was adaptated from https://github.com/bwssytems/ha-bridge/wiki/Run-as-service-on-linux-(systemd)
 Wants=network-online.target
-After=network-online.target
+After=syslog.target network-online.target
 
 [Service]
 Type=simple
 User=habridge
 WorkingDirectory=/opt/habridge
 ExecStart=/opt/habridge/bin/start.sh
-# /usr/bin/java -jar -Djava.net.preferIPv4Stack=true -Dupnp.config.address= -Dconfig.file=/etc/opt/habridge/habridge.config /opt/habridge/bin/ha-bridge.jar
+# ExecStart=/usr/bin/java -jar -Dconfig.file=/opt/habridge/data/habridge.config -Dserver.port=80 /opt/habridge/src/ha-bridge-5.1.0.jar
+Restart=on-failure
+RestartSec=10
+KillMode=process
 
 [Install]
 WantedBy=multi-user.target
