@@ -54,13 +54,14 @@ Usage:
   $namesh [br command line parameters | --status | --stop | ...]
 
   Supported operations:
+  
     --dim [HouseDevice Code] [dim level 0-6]
 
     --getpipe
       Returns the name of the pipe that is being used.
 
     --start
-      Starts backgroud service. Not necessary. Background service will be
+      Starts background service. Not necessary. Background service will be
       started if not running, when called with a br command line.
 
     --status
