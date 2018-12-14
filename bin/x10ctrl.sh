@@ -17,17 +17,31 @@
 # x10ctrl.sh
 #
 # Simple script to feed a name pipe with br (bottle rocket a command line tool
-# to drive X10 firecracker) commands. Starts a background service, if needed, 
-# to slowly draw form pipe and call br to process the requests. Warning: 
-# There are bugs here. I don't know where they are, 
+# to drive X10 firecracker) commands. Starts a background service, if needed,
+# to slowly draw form pipe and call br to process the requests. Warning:
+# There are bugs here. I don't know where they are,
 # but they are always there - somewhere.
+#
 
 # brcmdprefix="-x /dev/firecracker"
 brcmdprefix=
 namesh=`basename $0`
 namebase=`basename $0 .sh`
 logfile=`dirname $0`
-logfile=`dirname $logfile`/log/$namebase.log
+if [[ -d "`dirname $logfile`/log/" ]]; then
+  logfile=`dirname $logfile`/log/$namebase.log
+else
+  logfile=`pwd`
+  if [[ -e "bin/$namesh" ]] && [[ -d "$logfile/log/" ]]; then
+    logfile=$logfile/log/$namebase.log
+  elif [[ -e "$namesh" ]] && [[ -d "`dirname $logfile`/log/" ]]; then
+    logfile=`dirname $logfile`/log/$namebase.log
+  else
+    echo "Cannot find log directory." >&2
+  fi
+fi
+ls -l $logfile
+
 mutex=/tmp/$namesh.init.mutex
 pipe=/tmp/$namebase/${namebase}_fifo
 pipedir=`dirname $pipe`
@@ -40,6 +54,7 @@ Usage:
   $namesh [br command line parameters | --status | --stop | ...]
 
   Supported operations:
+    --dim [HouseDevice Code] [dim level 0-6]
 
     --getpipe
       Returns the name of the pipe that is being used.
@@ -120,8 +135,18 @@ queRequest() {
   fi
 
   if [[ -n "$*" ]]; then
-    echo `date +"%b %d %T"` "que $*" >>$logfile
-    echo -en "$*\n">>$pipe
+    if [[ "$1" = "--dim" ]]; then
+      if [[ "$3" = "6" ]]; then
+        echo -en "$2 off\n">>$pipe
+        echo `date +"%b %d %T"` "que $*" >>$logfile
+      else
+        echo -en "$2 on -c${2:0:1} -d7 -d-$3\n">>$pipe
+        echo `date +"%b %d %T"` "que $*" >>$logfile
+      fi
+    else
+      echo -en "$*\n">>$pipe
+      echo `date +"%b %d %T"` "que $*" >>$logfile
+    fi
   fi
   return 1
 } # main()
@@ -151,9 +176,15 @@ service() {
     mkdir $pipedir
   fi
 
+  local pidPath
+  pidPath=`dirname $logfile`
+  pidPath=`dirname $pidPath`/run/${namebase}.pid
+
   if ( mkfifo $pipe ); then
     rmdir $mutex
-    trap "rm -f $pipe; rm -fd $pipedir" EXIT
+    trap "rm -f $pipe; rm -fd $pipedir; rm $pidPath" EXIT
+
+    echo $$>$pidPath
 
     while true
     do
@@ -211,6 +242,9 @@ if [[ "${1:0:2}" = "--" ]]; then
   --getpipe)
     getpipe
     ;;
+  --comment)
+    echo `date +"%b %d %T"` "\"$*\"">>$logfile
+    ;;
   *)
     queRequest $*
     ;;
@@ -238,4 +272,3 @@ exit 0
 # http://www.linuxjournal.com/content/using-named-pipes-fifos-bash
 # https://stackoverflow.com/questions/4290684/using-named-pipes-with-bash-problem-with-data-loss
 # habridge@ha:/opt/habridge/bin $
-
