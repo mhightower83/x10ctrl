@@ -24,7 +24,7 @@ configFile=/etc${homeDir}/habridge.config
 logfile=${homeDir}/log/habridge.log
 tmstamp=`date +"%F %T.%N"`
 tmstamp="${tmstamp:0:23}"
-echo "${tmstamp} -------- Started $0 log ---------">$logfile
+echo "${tmstamp} -------- Started $0 log ---------" >$logfile
 cd ${homeDir}
 echo "${tmstamp} whoami `whoami`">>$logfile
 chmod 666 $logfile
