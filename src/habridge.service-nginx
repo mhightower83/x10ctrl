@@ -4,17 +4,17 @@ Description=HA Bridge
 Wants=network-online.target
 After=syslog.target network-online.target
 # Only uncomment the next line if you are using NGINX
-# Before=nginx.service
+Before=nginx.service
 
 [Service]
 Type=simple
 User=habridge
 WorkingDirectory=/opt/habridge
 # Use the next line if you are using port 80 and authbind
-ExecStart=/opt/habridge/bin/start.sh --authbind
+# ExecStart=/opt/habridge/bin/start.sh --authbind
 #
 # Use the next line if you are using NGINX or apache
-# ExecStart=/opt/habridge/bin/start.sh
+ExecStart=/opt/habridge/bin/start.sh
 Restart=on-failure
 RestartSec=10
 KillMode=process

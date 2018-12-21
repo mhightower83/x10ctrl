@@ -14,17 +14,17 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-unset serverPort
+unset serverPort usingAuthbind
 
 # ha-bridge defaults to port 80, via authbind. If you are using NGINX, un-comment serverPort.
-# serverPort="8088"
+serverPort="8088"
 
 homeDir=/opt/habridge
 configFile=/etc${homeDir}/habridge.config
 logfile=${homeDir}/log/habridge.log
 tmstamp=`date +"%F %T.%N"`
 tmstamp="${tmstamp:0:23}"
-echo "${tmstamp} -------- Started $0 log ---------" >$logfile
+echo "${tmstamp} -------- Started $0 log ---------">$logfile
 cd ${homeDir}
 echo "${tmstamp} whoami `whoami`">>$logfile
 chmod 666 $logfile
@@ -50,13 +50,12 @@ if [[ -f ${homeDir}/bin/autoUpdateConfig ]]; then
   fi
 fi
 
+[[ "${1}" = "--authbind" ]] && usingAuthbind="authbind --deep java"
 [[ -n "${serverPort}" ]] && serverPort="-Dserver.port=${serverPort}"
 
-
-# nohup java \
-
-nohup authbind --deep java \
-      -jar \
+nohup \
+      ${usingAuthbind} \
+      java -jar \
       -Dconfig.file=${configFile} \
       ${serverPort} \
       ${homeDir}/bin/ha-bridge.jar >>$logfile 2>&1
