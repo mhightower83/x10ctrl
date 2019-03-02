@@ -1,0 +1,16 @@
+{
+  "short_name": "HA Remote",
+  "name": "HA Remote",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "512x512",
+      "type": "image/ico"
+    }
+  ],
+  "start_url": "/remote.htm",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "black",
+  "theme_color": "black"
+}
