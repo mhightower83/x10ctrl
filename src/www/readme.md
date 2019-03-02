@@ -1,5 +1,5 @@
 # DRAFT
-## A Web App based remote control for the ha-bridge
+## A simple Web App based remote control for the ha-bridge
 * Place the files `remote.htm` and `manifest.json` on the same web server you have ha-bridge running through.
    * The files will usually go in directory: `/var/www/html`.
 * To use from the Chrome browser on a smart phone, access remote.htm on the server.
