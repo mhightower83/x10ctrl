@@ -1,21 +1,18 @@
 <!DOCTYPE html>
-<!-- Rough Draft -->
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+
+<!--Details for this are from: https://developers.google.com/web/fundamentals/web-app-manifest/ -->
+<link rel="manifest" href="/manifest.json">
 
 <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 
-<!-- shortcut::favicon.png -->
 <title>HA Remote</title>
-
-<!-- build:css style.css -->
-<!-- endbuild -->
 
 <style>
 /* Chrome, Safari and Opera syntax */
@@ -38,7 +35,6 @@
 
 /* Standard syntax */
 :fullscreen {
-  orientation: landscape;
   background-color: black;
   color: white;
 }
@@ -50,7 +46,6 @@
   /* bring your own prefixes */
   overflow-y: auto;   /* allows verticle scroll */
   height: 100%;
-  /*width 100%;*/
   transform: translate(-50%, -50%);
 }
 
@@ -64,12 +59,8 @@ html, body {
     font-size: 1em;
     line-height: 1.5;
     word-wrap: break-word;
-    background-color: black;    
+    background-color: black;
     color: white;
-    /*width: 100%*/
-    /*margin: 0;*/
-    /*border: 0;*/
-    /*padding: 0;*/
 }
 
 td {
@@ -78,24 +69,8 @@ td {
   	font-weight: bold;
 }
 
-table {
-    /*align: center;*/
-    /*margin: none;*/
-    /*width: 100%;*/ /* spreads table out to the edge on full screen */
-}
-
 #targetDiv {
-    /*margin: 0;*/
-    /*border: 0;*/
-    /*padding: 0;*/
     width: 100%
-    /*background-color: black;*/
-    /*color: white;*/
-  	/*transform: scale(1.5);*/
-    /* width: 100% /* vw; */
-    /*font-size: 1em;*/
-      /*overflow-y: auto;*/
-      /*height: 100%;*/
 }
 
 #targetLog {
@@ -111,11 +86,6 @@ table {
 h1 {
     font-size: 2em;
     font-weight: bold;
-    /*line-height: 1.25;*/
-    /*margin-bottom: 16px;*/
-    /*margin-top: 24px;*/
-    /*border-bottom: 1px solid #eaecef;*/
-    /*padding-bottom: .3em*/
 }
 
 .device {  /* Device Name field of table */
@@ -124,16 +94,7 @@ h1 {
 
 .container {
 	text-align: center;
-	/*border: 1px solid green;*/
 }
-
-/*.container table {*/
-	/*border: 1px solid red; */
-/*	font-size: auto;*/
-  /*You can also uncomment this and remove the align="center" attribute    */
-	/*margin: 0 auto;*/
-	
-/*}*/
 
 /* Buttons from https://www.bestcssbuttongenerator.com/ */
 /* Usage: <a href="#" class="myButtonOn">On</a>*/
@@ -178,10 +139,8 @@ h1 {
 	position:relative;
 	top:1px;
 }
-/* Usage: <a href="#" class="myButtonOn">On</a>*/
 
 /* Usage: <a href="#" class="myButtonOff">Off</a>*/
-
 .myButtonOff {
 	-moz-box-shadow:inset 0px 1px 0px 0px #f5978e;
 	-webkit-box-shadow:inset 0px 1px 0px 0px #f5978e;
@@ -309,8 +268,8 @@ function putUrl(path, state) {
 function showMe(srcFile, elementId, displayRawHtml, displayText, displayJson) {
       function mkButton(id, state, label) {
         let url = srcFile + "/api/nobody/lights/" + id + "/state";
-        return '<a id="id' + id + '-' + label + '" title="Click for ' + 
-                label + '" href="#" onclick="putUrl(\'' + url + '\', ' + state + 
+        return '<a id="id' + id + '-' + label + '" title="Click for ' +
+                label + '" href="#" onclick="putUrl(\'' + url + '\', ' + state +
                 ');return false;" class="myButton' + label + '">' + label + '</a>';
       }
       let pathFile = srcFile + '/api/devices';
@@ -335,7 +294,7 @@ function showMe(srcFile, elementId, displayRawHtml, displayText, displayJson) {
               //"<center><button onclick=\"openFullscreen('targetDiv');\">full screen</button><button onclick=\"closeFullscreen();\">normal</button></center>";
               // html += "<table><tbody>";
               html += "<table align=\"center\"><tbody>";
-              
+
               for (let i=0; i<jData.length; i++) {
                   let dimmable = false;
                   if (jData[i].dimUrl) {
@@ -348,13 +307,13 @@ function showMe(srcFile, elementId, displayRawHtml, displayText, displayJson) {
                   html += '<td style="text-align:center;">';
                   html += mkButton(jData[i].id, true, "On");
                   html += '</td>';
- 
+
                   html += '<td style="text-align:center;" class="device">' + jData[i].name + "</td>";
-                  
+
                   html += '<td style="text-align:center;">';
                   html += mkButton(jData[i].id, false, "Off");
                   html += '</td>';
-                  html += "</tr>";                  
+                  html += "</tr>";
                   // target.innerHTML += "<pre>" + jData[i].id + ", " + jData[i].name + ", " + ((dimmable)? "Dimmable" : "Not dimmable") + "</pre>";
               }
               html += "</tbody></table>";
@@ -372,7 +331,6 @@ function showJson(srcFile) {
 }
 
 showJson('');
-
 
 </script>
 </body>
