@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
 <!--Details for this are from: https://developers.google.com/web/fundamentals/web-app-manifest/ -->
+<!--<link rel="manifest" href="http://hapi/manifest.json">-->
 <link rel="manifest" href="/manifest.json">
 
 <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
@@ -86,6 +87,8 @@ td {
 h1 {
     font-size: 2em;
     font-weight: bold;
+    margin: 0;
+    padding: 0;
 }
 
 .device {  /* Device Name field of table */
@@ -139,8 +142,10 @@ h1 {
 	position:relative;
 	top:1px;
 }
+/* Usage: <a href="#" class="myButtonOn">On</a>*/
 
 /* Usage: <a href="#" class="myButtonOff">Off</a>*/
+
 .myButtonOff {
 	-moz-box-shadow:inset 0px 1px 0px 0px #f5978e;
 	-webkit-box-shadow:inset 0px 1px 0px 0px #f5978e;
@@ -244,11 +249,8 @@ function putUrl(path, state) {
 
     var xhr = new XMLHttpRequest();
     let url = path;
-    // console.log(url);
     xhr.open("PUT", url, true);
     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-    // xhr.setRequestHeader('Access-Control-Allow-Origin', '*/*');
-    // xhr.setRequestHeader('Access-Control-Allow-Headers', '*');
     xhr.onload = function () {
     	var users = JSON.parse(xhr.responseText);
     	if (xhr.readyState == 4 && xhr.status == "200") {
@@ -265,15 +267,24 @@ function putUrl(path, state) {
     return false;
 }
 
-function showMe(srcFile, elementId, displayRawHtml, displayText, displayJson) {
-      function mkButton(id, state, label) {
-        let url = srcFile + "/api/nobody/lights/" + id + "/state";
+function fullscreenButtons() {
+    let strButtons = '<h1>&nbsp;</h1><span><center>';
+    strButtons += '<button onclick="openFullscreen(\'targetDiv\');"><h1>Full Screen</h1></button>';
+    strButtons += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+    strButtons += '<button onclick="closeFullscreen();"><h1>Normal</h1></button>';
+    strButtons += '</center></span>';
+    return strButtons;
+}
+
+function buildRemote(site, elementId) {
+    function mkButton(id, state, label) {
+        let url = site + "/api/nobody/lights/" + id + "/state";
         return '<a id="id' + id + '-' + label + '" title="Click for ' +
                 label + '" href="#" onclick="putUrl(\'' + url + '\', ' + state +
                 ');return false;" class="myButton' + label + '">' + label + '</a>';
-      }
-      let pathFile = srcFile + '/api/devices';
-      fetch(pathFile, {mode: "cors"}).then(function (response) {
+    }
+    let pathFile = site + '/api/devices';
+    fetch(pathFile, {mode: "cors"}).then(function (response) {
         if (response.status === 404) {
             alert("Oops! Missing file: " + pathFile);
             return;
@@ -283,54 +294,41 @@ function showMe(srcFile, elementId, displayRawHtml, displayText, displayJson) {
             return;
         }
         response.text().then(function (data) {
-          var target;
-          if (elementId === undefined) {
-              elementId = "targetDiv" ;
-          }
-          target = document.getElementById(elementId);
-          if (displayJson === true) {
+            var target;
+            if (elementId === undefined) {
+                elementId = "targetDiv";
+            }
+            target = document.getElementById(elementId);
             let jData = JSON.parse(data);
-              let html = "";
-              //"<center><button onclick=\"openFullscreen('targetDiv');\">full screen</button><button onclick=\"closeFullscreen();\">normal</button></center>";
-              // html += "<table><tbody>";
-              html += "<table align=\"center\"><tbody>";
-
-              for (let i=0; i<jData.length; i++) {
-                  let dimmable = false;
-                  if (jData[i].dimUrl) {
-                      let jItem = JSON.parse(jData[i].dimUrl);
-                      if (jItem) {
-                          dimmable = true;
-                      }
-                  }
-                  html += "<tr>";
-                  html += '<td style="text-align:center;">';
-                  html += mkButton(jData[i].id, true, "On");
-                  html += '</td>';
-
-                  html += '<td style="text-align:center;" class="device">' + jData[i].name + "</td>";
-
-                  html += '<td style="text-align:center;">';
-                  html += mkButton(jData[i].id, false, "Off");
-                  html += '</td>';
-                  html += "</tr>";
-                  // target.innerHTML += "<pre>" + jData[i].id + ", " + jData[i].name + ", " + ((dimmable)? "Dimmable" : "Not dimmable") + "</pre>";
-              }
-              html += "</tbody></table>";
-              target.innerHTML = html;
-              // target.innerHTML = escapeFormatedText(html);
-          }
+            let html = '<table align="center"><tbody>';
+            for (let i=0; i<jData.length; i++) {
+                let dimmable = false;
+                if (jData[i].dimUrl) {
+                    let jItem = JSON.parse(jData[i].dimUrl);
+                    if (jItem) {
+                        dimmable = true;
+                    }
+                }
+                html += '<tr>';
+                html += '<td style="text-align:center;">' + mkButton(jData[i].id, true, "On") + '</td>';
+                html += '<td style="text-align:center;" class="device">' + jData[i].name + '</td>';
+                html += '<td style="text-align:center;">' + mkButton(jData[i].id, false, "Off") + '</td>';
+                html += '</tr>';
+                // target.innerHTML += "<pre>" + jData[i].id + ", " + jData[i].name + ", " + ((dimmable)? "Dimmable" : "Not dimmable") + "</pre>";
+            }
+            html += '</tbody></table>';
+            let fullScreenMode = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+            if( fullScreenMode != true) {
+                html += fullscreenButtons();
+            }
+            target.innerHTML = html;
         });
     }).catch(function (err) {
         console.log("Fetch Error :-S", err);
     });
 }
-
-function showJson(srcFile) {
-    showMe(srcFile, "targetDiv", false, false, true);
-}
-
-showJson('');
+// buildRemote('http://hapi', 'targetDiv');
+buildRemote('', 'targetDiv');
 
 </script>
 </body>
