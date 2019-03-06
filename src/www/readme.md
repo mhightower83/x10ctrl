@@ -1,5 +1,7 @@
 # DRAFT
 ## A simple Web App based remote control for the ha-bridge
+At this time there is only *On* and *Off* functions. A *Dimmer* control has not yet been implemented.
+### Setup
 * Place the files `remote.htm` and `manifest.json` on the same web server you have ha-bridge running through.
    * The files will usually go in directory: `/var/www/html`.
    
