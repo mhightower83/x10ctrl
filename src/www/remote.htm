@@ -49,11 +49,11 @@
   height: 100%;
   transform: translate(-50%, -50%);
 }
-
+/*D
 .offscreen {
     left: -9999px;
     position: relative;
-}
+} */
 
 html, body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
@@ -72,16 +72,6 @@ td {
 
 #targetDiv {
     width: 100%
-}
-
-#targetLog {
-    display: none; /* comment out to show logevents in the background */
-}
-
-.logging {
-    font-family: 'Source Code Pro', monospace;
-    font-size: 1em;
-    line-height: 1.25;
 }
 
 h1 {
@@ -190,47 +180,91 @@ h1 {
 	top:1px;
 }
 
+.logging {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1em;
+    line-height: 1.25;
+}
+
+.logging blockquote,
+.logging dl,
+.logging ol,
+.logging p,
+.logging pre,
+.logging table,
+.logging ul {
+    margin-bottom: 16px;
+    margin-top: 0
+}
+
+.logging pre + blockquote {
+    margin-top: -16px;
+}
+
 </style>
 </head>
 <body>
 <div id="targetDiv" class="centered"></div>
-<div id="targetLog" class="logging"></div>
 
 <script>
-var targetLog = document.getElementById("targetLog");
-targetLog.innerHTML = "";
-function logIt(msg) {
-    targetLog.innerHTML += "<pre>" + msg + "</pre>";
+
+var debugIsOn = false;
+var refresh = false;
+
+function debugOn() {
+    if (debugIsOn) {
+        return;
+    }
+    // https://stackoverflow.com/questions/6840326/how-can-i-create-and-style-a-div-using-javascript
+    let div = document.createElement('div');
+    div.id = "targetLog";
+    div.setAttribute('class', 'logging'); // this works
+    div.style.color = "yellow";
+    div.innerHTML = "<hr><large>Debug Log Enabled</large><br><br>";
+    document.getElementById("targetDiv").appendChild(div);
+    debugIsOn = true;
+}
+
+function logIt(msg, msg2) {
+    // console.log(msg + ((msg2)? msg2 : ""));
+    var targetL = document.getElementById("targetLog");
+    if (targetL) {
+        targetL.innerHTML += "<pre>" + msg + "</pre>";
+        if (msg2 !== undefined) {
+            targetL.innerHTML += "<blockquote><pre>" + msg2 + "</pre></blockquote>";
+        }
+    }
 }
 
 // https://www.w3schools.com/howto/howto_js_fullscreen.asp
 /* Get the element you want displayed in fullscreen mode (a video in this example): */
 /* View in fullscreen */
 function openFullscreen(value) {
-  // let elem = document.documentElement;
-  let elem = document.getElementById(value);
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.mozRequestFullScreen) { /* Firefox */
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-    elem.webkitRequestFullscreen();
-  } else if (elem.msRequestFullscreen) { /* IE/Edge */
-    elem.msRequestFullscreen();
-  }
+    // let elem = document.documentElement;
+    let elem = document.getElementById(value);
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) { /* Firefox */
+        elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { /* IE/Edge */
+        elem.msRequestFullscreen();
+    }
 }
 
 /* Close fullscreen */
 function closeFullscreen() {
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.mozCancelFullScreen) { /* Firefox */
-    document.mozCancelFullScreen();
-  } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-    document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) { /* IE/Edge */
-    document.msExitFullscreen();
-  }
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) { /* Firefox */
+        document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+        document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) { /* IE/Edge */
+        document.msExitFullscreen();
+    }
+    refresh();
 }
 
 // Do a PUT to set light on or off or brightness
@@ -252,54 +286,71 @@ function putUrl(path, state) {
     xhr.open("PUT", url, true);
     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
     xhr.onload = function () {
-    	var users = JSON.parse(xhr.responseText);
-    	if (xhr.readyState == 4 && xhr.status == "200") {
-    		console.table(users);
-    		logIt("PUT: Success");
-    	} else {
-    		console.error(users);
-    		logIt("PUT: Failed: " + xhr.readyState + " " + xhr.status);
-    	}
+        var obj = JSON.parse(xhr.responseText);
+        if (xhr.readyState == 4 && xhr.status == "200") {
+        	  logIt("PUT: Success: Response:", JSON.stringify(obj, null, 4));
+        } else {
+        	  logIt("PUT: Failed: " + xhr.readyState + " " + xhr.status);
+        }
     }
     xhr.send(json);
-    logIt( "PUT: " + url + " <= " + json);
-
+    logIt( "PUT: " + url + " => ", json);
     return false;
 }
 
-function fullscreenButtons() {
-    let strButtons = '<h1>&nbsp;</h1><span><center>';
-    strButtons += '<button onclick="openFullscreen(\'targetDiv\');"><h1>Full Screen</h1></button>';
-    strButtons += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-    strButtons += '<button onclick="closeFullscreen();"><h1>Normal</h1></button>';
+function specialButtons(fullScreenMode) {
+    function mkButton(label, fn) {
+        return '<button onclick="' + fn + ';" style="margin: 0.5em;"><h1>' + label + '</h1></button>'
+    }
+    let strButtons = '<h1>&nbsp;</h1><hr><span><center>';
+    if (fullScreenMode !== true) {
+        strButtons += mkButton("Full Screen", "openFullscreen(\'targetDiv\')");
+        strButtons += mkButton("Normal", "closeFullscreen()");
+        strButtons += mkButton("Refresh", "doRefresh()");
+    }
+    strButtons += mkButton("Debug On", "debugOn()");
     strButtons += '</center></span>';
     return strButtons;
 }
 
-function buildRemote(site, elementId) {
+function clearElement(byId) {
+    var div = document.getElementById(byId);
+    while(div.firstChild){
+        div.removeChild(div.firstChild);
+    }
+}
+
+function buildRemote(site) {
     function mkButton(id, state, label) {
         let url = site + "/api/nobody/lights/" + id + "/state";
         return '<a id="id' + id + '-' + label + '" title="Click for ' +
                 label + '" href="#" onclick="putUrl(\'' + url + '\', ' + state +
                 ');return false;" class="myButton' + label + '">' + label + '</a>';
     }
+    if (refresh) {
+        clearElement("targetDiv");
+        // var target = document.getElementById("targetDiv");
+        // target.innerHTML = "";
+        if (debugIsOn) {
+            debugIsOn = false;
+            debugOn();
+        }
+    }
     let pathFile = site + '/api/devices';
     fetch(pathFile, {mode: "cors"}).then(function (response) {
         if (response.status === 404) {
-            alert("Oops! Missing file: " + pathFile);
+            alert("Oops! 404 Missing file: " + pathFile);
+            logIt("Fetch failed (404): Missing file: " + pathFile);
             return;
         }
         if (response.status !== 200) {
-            console.log("Fetch failed with status: " + response.status);
+            logIt("Fetch failed with status: " + response.status);
             return;
         }
         response.text().then(function (data) {
-            var target;
-            if (elementId === undefined) {
-                elementId = "targetDiv";
-            }
-            target = document.getElementById(elementId);
             let jData = JSON.parse(data);
+            // For possible issues with stringify see https://stackoverflow.com/questions/957537/how-can-i-display-a-javascript-object
+            logIt("Fetch response from: " + pathFile, JSON.stringify(jData, null, 4));
             let html = '<table align="center"><tbody>';
             for (let i=0; i<jData.length; i++) {
                 let dimmable = false;
@@ -317,18 +368,69 @@ function buildRemote(site, elementId) {
                 // target.innerHTML += "<pre>" + jData[i].id + ", " + jData[i].name + ", " + ((dimmable)? "Dimmable" : "Not dimmable") + "</pre>";
             }
             html += '</tbody></table>';
-            let fullScreenMode = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
-            if( fullScreenMode != true) {
-                html += fullscreenButtons();
+            if (requestButtons) {
+                let fullScreenMode = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+                html += specialButtons(fullScreenMode);
             }
-            target.innerHTML = html;
+            var target = document.getElementById("targetDiv");
+            if (debugIsOn) {
+                // Move debug log after remote keypad.
+                let savedLog = target.innerHTML;
+                target.innerHTML = html;
+                target.innerHTML += savedLog;
+            } else {
+                target.innerHTML = html;
+            }
         });
     }).catch(function (err) {
-        console.log("Fetch Error :-S", err);
+        logIt("Fetch Error :-S", err);
     });
+    refresh = false;
 }
-// buildRemote('http://hapi', 'targetDiv');
-buildRemote('', 'targetDiv');
+
+function getUrlVars() {
+    var vars = {};
+    window.location.href.replace(/[?&]+([^=&]+)(?:=|)([^&]*)/gi, function (ignore, key, value) {
+        vars[key.toLowerCase()] =
+        (
+            (value === "")
+            ? true
+            : value
+        );
+    });
+    return vars;
+}
+
+function getUrlParam(parameter, defaultvalue) {
+    var urlparameter = defaultvalue;
+    if (window.location.href.indexOf("?") > -1) {
+        urlparameter = getUrlVars()[parameter];
+    }
+    if (urlparameter === undefined) {
+        urlparameter = defaultvalue;
+    }
+    return urlparameter;
+}
+
+var site = getUrlParam("http", '');
+
+var requestLog = getUrlParam("log", false);
+if (requestLog == false) {
+    requestLog = getUrlParam("debug", false);
+}
+
+var requestButtons = getUrlParam("buttons", false);
+
+function doRefresh() {
+    refresh = true;
+    buildRemote(site);
+}
+
+if (requestLog) {
+    debugOn();
+}
+
+buildRemote(site);
 
 </script>
 </body>
