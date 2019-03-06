@@ -8,6 +8,17 @@
    sudo wget "https://raw.githubusercontent.com/mhightower83/x10ctrl/master/src/www/remote.htm"
    sudo wget "https://raw.githubusercontent.com/mhightower83/x10ctrl/master/src/www/manifest.json"
    ```
+   * If the files are not placed at the root of your server path you will need to update the files `remote.htm` and `manifest.json` internal references to each other, such that they internally point to the new locations.
 * To use from the Chrome browser on a smart phone, access remote.htm on the server.
    * eg. `http://hapi/remote.htm`.
 * Use the Chrome menu, the 3 verticle dots, select "Add to Home screen" and follow the prompts.
+* For a debug log add `?log` to the end of the url. The logged activity will appear after the remote keypad, scroll down.
+   * eg. `http://hapi/remote.htm?log`
+   
+### Just to be complete
+There are two more url options that were used for development. They are not practicle for normal use.
+* Specify a web site other than the one the html was loaded from. `?http=<a cors compliant site>`
+   * eg. `http://hapi/remote.htm?http=http://hapi2`
+   * eg. `http://hapi/remote.htm?log&http=http://hapi2`
+* Enable some extra plain buttons for full screen control, normal, refresh etc. `?buttons`
+   * eg. `http://hapi/remote.htm?buttons`
