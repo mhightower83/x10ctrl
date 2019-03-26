@@ -8,7 +8,6 @@
       "type": "image/ico"
     }
   ],
-  "start_url": "/remote.htm",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "black",
