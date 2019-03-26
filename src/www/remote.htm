@@ -327,6 +327,23 @@ function buildRemote(site) {
                 label + '" href="#" onclick="putUrl(\'' + url + '\', ' + state +
                 ');return false;" class="myButton' + label + '">' + label + '</a>';
     }
+    function addDevice(i, jData) {
+        let dimmable = false;
+        if (jData[i].dimUrl) {
+            let jItem = JSON.parse(jData[i].dimUrl);
+            if (jItem) {
+                dimmable = true;
+            }
+        }
+        let html = '<tr>';
+        html += '<td style="text-align:center;">' + mkButton(jData[i].id, true, "On") + '</td>';
+        html += '<td style="text-align:center;" class="device">' + jData[i].name + '</td>';
+        html += '<td style="text-align:center;">' + mkButton(jData[i].id, false, "Off") + '</td>';
+        html += '</tr>';
+        html += '<tr><td>';
+        // target.innerHTML += "<pre>" + jData[i].id + ", " + jData[i].name + ", " + ((dimmable)? "Dimmable" : "Not dimmable") + "</pre>";
+        return html;
+    }
     if (refresh) {
         clearElement("targetDiv");
         // var target = document.getElementById("targetDiv");
@@ -352,20 +369,17 @@ function buildRemote(site) {
             // For possible issues with stringify see https://stackoverflow.com/questions/957537/how-can-i-display-a-javascript-object
             logIt("Fetch response from: " + pathFile, JSON.stringify(jData, null, 4));
             let html = '<table align="center"><tbody>';
-            for (let i=0; i<jData.length; i++) {
-                let dimmable = false;
-                if (jData[i].dimUrl) {
-                    let jItem = JSON.parse(jData[i].dimUrl);
-                    if (jItem) {
-                        dimmable = true;
+            if (order.length == 0) {
+                for (let i=0; i<jData.length; i++) {
+                    html += addDevice(i, jData);
+                }
+            } else {
+                for (let j=0; j<order.length; j++) {
+                    for (let i=0; i<jData.length; i++) {
+                        if (jData[i].id === order[j])
+                            html += addDevice(i, jData);
                     }
                 }
-                html += '<tr>';
-                html += '<td style="text-align:center;">' + mkButton(jData[i].id, true, "On") + '</td>';
-                html += '<td style="text-align:center;" class="device">' + jData[i].name + '</td>';
-                html += '<td style="text-align:center;">' + mkButton(jData[i].id, false, "Off") + '</td>';
-                html += '</tr>';
-                // target.innerHTML += "<pre>" + jData[i].id + ", " + jData[i].name + ", " + ((dimmable)? "Dimmable" : "Not dimmable") + "</pre>";
             }
             html += '</tbody></table>';
             if (requestButtons) {
@@ -412,6 +426,10 @@ function getUrlParam(parameter, defaultvalue) {
     return urlparameter;
 }
 
+var order = getUrlParam("order", '');
+if (order !== undefined) {
+    order = order.split(',');
+}
 var site = getUrlParam("http", '');
 
 var requestLog = getUrlParam("log", false);
