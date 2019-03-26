@@ -369,7 +369,7 @@ function buildRemote(site) {
             // For possible issues with stringify see https://stackoverflow.com/questions/957537/how-can-i-display-a-javascript-object
             logIt("Fetch response from: " + pathFile, JSON.stringify(jData, null, 4));
             let html = '<table align="center"><tbody>';
-            if (order.length == 0) {
+            if (order === undefined) {
                 for (let i=0; i<jData.length; i++) {
                     html += addDevice(i, jData);
                 }
@@ -426,7 +426,7 @@ function getUrlParam(parameter, defaultvalue) {
     return urlparameter;
 }
 
-var order = getUrlParam("order", '');
+var order = getUrlParam("order");
 if (order !== undefined) {
     order = order.split(',');
 }
