@@ -1,4 +1,4 @@
-<!--Updated on github 03/25/19-->
+<!--Last updated on github 03/25/19-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,7 +110,7 @@ h1 {
 	border:1px solid #268a16;
 	display:inline-block;
 	cursor:pointer;
-	color:#306108;
+	color:#ffffff; /* #306108; */
 	/*font-family:Arial;*/
 	/*font-size:15px;*/
 	font-size:1.2em;
@@ -269,7 +269,7 @@ function closeFullscreen() {
 }
 
 // Do a PUT to set light on or off or brightness
-function putUrl(path, state) {
+function putUrl(path, state, devId) {
     var json;
     if (isNaN(state) || state === true || state === false) {
         json = '{"on": ' + state + '}';
@@ -289,6 +289,8 @@ function putUrl(path, state) {
     xhr.onload = function () {
         var obj = JSON.parse(xhr.responseText);
         if (xhr.readyState == 4 && xhr.status == "200") {
+            let device = document.getElementById(devId);
+            if (device) device.style.color = colorOnOff(state);
         	  logIt("PUT: Success: Response:", JSON.stringify(obj, null, 4));
         } else {
         	  logIt("PUT: Failed: " + xhr.readyState + " " + xhr.status);
@@ -320,15 +322,20 @@ function clearElement(byId) {
         div.removeChild(div.firstChild);
     }
 }
-
+function colorOnOff(isOn) {
+    if (isOn === undefined) isOn = false;
+        return ((isOn)? "yellow" : "Gainsboro");
+}
 function buildRemote(site) {
-    function mkButton(id, state, label) {
+    function mkButton(jData, state, label) {
+        if (jData.inactive && state) return '';
+        let id = jData.id;
         let url = site + "/api/nobody/lights/" + id + "/state";
         return '<a id="id' + id + '-' + label + '" title="Click for ' +
-                label + '" href="#" onclick="putUrl(\'' + url + '\', ' + state +
-                ');return false;" class="myButton' + label + '">' + label + '</a>';
+                label + '" href="#" onclick="putUrl(\'' + url + '\', ' + state + ', \'id' + id +
+                '\');return false;" class="myButton' + label + '">' + ((jData.inactive)?'___':label) + '</a>';
     }
-    function addDevice(i, jData) {
+    function addDevice(i, jData) { 
         let dimmable = false;
         if (jData[i].dimUrl) {
             let jItem = JSON.parse(jData[i].dimUrl);
@@ -336,10 +343,11 @@ function buildRemote(site) {
                 dimmable = true;
             }
         }
+        let deviceState = (jData[i].inactive) ? false : jData[i].deviceState.on;
         let html = '<tr>';
-        html += '<td style="text-align:center;">' + mkButton(jData[i].id, true, "On") + '</td>';
-        html += '<td style="text-align:center;" class="device">' + jData[i].name + '</td>';
-        html += '<td style="text-align:center;">' + mkButton(jData[i].id, false, "Off") + '</td>';
+        html += '<td style="text-align:center;">' + mkButton(jData[i], true, "On") + '</td>';
+        html += '<td id="id'+ jData[i].id +'" style="text-align:center; color:' + colorOnOff(deviceState) + ';" class="device">' + jData[i].name + '</td>';
+        html += '<td style="text-align:center;">' + mkButton(jData[i], false, "Off") + '</td>';
         html += '</tr>';
         html += '<tr><td>';
         // target.innerHTML += "<pre>" + jData[i].id + ", " + jData[i].name + ", " + ((dimmable)? "Dimmable" : "Not dimmable") + "</pre>";
@@ -355,7 +363,7 @@ function buildRemote(site) {
         }
     }
     let pathFile = site + '/api/devices';
-    fetch(pathFile, {mode: "cors"}).then(function (response) {
+    fetch(pathFile, {method: "get", mode: "cors", cache: "no-cache"}).then(function (response) {
         if (response.status === 404) {
             alert("Oops! 404 Missing file: " + pathFile);
             logIt("Fetch failed (404): Missing file: " + pathFile);
@@ -378,7 +386,7 @@ function buildRemote(site) {
             } else {
                 for (let j=0; j<order.length; j++) {
                     for (let i=0; i<jData.length; i++) {
-                        if (jData[i].id === order[j] && !jData[i].inactive)
+                        if (jData[i].id === order[j]) // && !jData[i].inactive)
                             html += addDevice(i, jData);
                     }
                 }
@@ -396,6 +404,35 @@ function buildRemote(site) {
                 target.innerHTML += savedLog;
             } else {
                 target.innerHTML = html;
+            }
+        });
+    }).catch(function (err) {
+        logIt("Fetch Error :-S", err);
+    });
+    refresh = false;
+}
+
+function updateRemote() {
+    let pathFile = site + '/api/devices';
+    fetch(pathFile, {method: "get", mode: "cors", cache: "no-cache"}).then(function (response) {
+        if (response.status === 404) {
+            alert("Oops! 404 Missing file: " + pathFile);
+            logIt("Fetch failed (404): Missing file: " + pathFile);
+            return;
+        }
+        if (response.status !== 200) {
+            logIt("Fetch failed with status: " + response.status);
+            return;
+        }
+        response.text().then(function (data) {
+            let jData = JSON.parse(data);
+            logIt("Fetch response from: " + pathFile, JSON.stringify(jData, null, 4));
+            for (let i=0; i<jData.length; i++) {
+                // Inactive devices may not have state
+                if (jData[i].inactive) continue;
+                let device = document.getElementById('id' + jData[i].id);
+                if (device)
+                    device.style.color = colorOnOff(jData[i].deviceState.on);
             }
         });
     }).catch(function (err) {
@@ -432,7 +469,12 @@ var order = getUrlParam("order");
 if (order !== undefined) {
     order = order.split(',');
 }
+
+// function someFunction(site) {     
+//     return site.replace(/\/$/, "");
+// } 
 var site = getUrlParam("http", '');
+site = site.replace(/\/$/, "");
 
 var requestLog = getUrlParam("log", false);
 if (requestLog == false) {
@@ -451,7 +493,7 @@ if (requestLog) {
 }
 
 buildRemote(site);
-
+setInterval(updateRemote, 60000);
 </script>
 </body>
 </html>
